@@ -14,10 +14,12 @@ class Simulator:
         self,
         mesh: Mesh,
         dirichlet_data: Callable,
+        neumann_data: Callable,
         rhs: Callable,
     ) -> None:
         self.mesh = mesh
         self.dirichlet_data = dirichlet_data
+        self.neumann_data = neumann_data
         self.rhs = rhs
         self.solution = np.zeros(shape=(self.mesh.number_of_nodes, 1))
 
@@ -26,6 +28,7 @@ class Simulator:
         f = compute_loadvector(
             self.rhs,
             self.dirichlet_data,
+            self.neumann_data,
             self.mesh,
         )
         self.solution = np.linalg.solve(A, f)

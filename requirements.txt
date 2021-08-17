@@ -1,0 +1,7 @@
+numpy
+pytest
+scipy
+matplotlib
+pre-commit
+tox
+black

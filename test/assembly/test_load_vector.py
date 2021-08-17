@@ -11,9 +11,12 @@ class LoadVectorUnittest(MeshSetUp):
             return -6.0
 
         def dirichlet_data(node):
-            return 1 + node[0] ** 2 + 2.0 * node[1] ** 2
+            return 1.0 + node[0] ** 2 + 2.0 * node[1] ** 2
 
-        load_vector = compute_loadvector(rhs, dirichlet_data, self.mesh)
+        def neumann_data(node):
+            return 0.0
+
+        load_vector = compute_loadvector(rhs, dirichlet_data, neumann_data, self.mesh)
         self.assertEqual(
             load_vector[self.mesh.free_indices],
             4.0 * 1.0 / 3.0 * 0.5 * self.mesh.determinant[0] * rhs(self.mesh.pointmatrix[4]),

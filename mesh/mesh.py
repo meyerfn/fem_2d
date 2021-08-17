@@ -64,6 +64,7 @@ class Mesh:
     def __is_edge_on_neumann_boundary(
         self, vertex_one: np.array, vertex_two: np.array, neumann_edges: np.array
     ) -> bool:
+        edge_on_neumann_edge = False
         for neumann_edge in neumann_edges:
             (
                 vector_neumann_one_neumann_two,
