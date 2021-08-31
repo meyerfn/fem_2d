@@ -1,6 +1,7 @@
 from mesh.mesh import Mesh
 from simulator.simulator import Simulator
 from plot.plot_solution import plot_solution
+from basis.linear_basis import LinearBasisFunctions
 
 import itertools
 import numpy as np
@@ -31,7 +32,7 @@ def dirichlet_data(node):
 
 
 def neumann_data(node):
-    return 1.0
+    return 0.0
 
 
 if __name__ == "__main__":
@@ -43,6 +44,7 @@ if __name__ == "__main__":
     neumann_edges = np.array([[[0, 0], [0, 1]], [[0, 0], [1, 0]]])
     # neumann_edges = []
     mesh = Mesh(nodes, neumann_edges)
-    simulator = Simulator(mesh, dirichlet_data, neumann_data, rhs)
+    basis_functions = LinearBasisFunctions()
+    simulator = Simulator(mesh, basis_functions, dirichlet_data, neumann_data, rhs)
     simulator.simulate()
     plot_solution(simulator)
