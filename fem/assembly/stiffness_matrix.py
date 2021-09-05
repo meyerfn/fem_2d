@@ -1,8 +1,10 @@
-from mesh.mesh import Mesh
-from basis.basis import BasisFunctions
-import numpy as np
 from itertools import product
+
+import numpy as np
 import quadpy
+
+from fem.basis.basis import BasisFunctions
+from fem.mesh.mesh import Mesh
 
 
 def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.array:
@@ -21,11 +23,11 @@ def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.a
 
 
 def compute_local_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions, index: int) -> np.array:
-    scheme = quadpy.t2.get_good_scheme(1)
+    scheme = quadpy.t2.get_good_scheme(3)
     local_stiffnessmatrix = np.zeros(
         shape=(basis_functions.number_of_basis_functions(), basis_functions.number_of_basis_functions())
     )
-    invTransposedJacobian = np.linalg.inv(np.transpose(mesh.jacobian[index]))
+    inv_transposed_jacobian = np.linalg.inv(np.transpose(mesh.jacobian[index]))
     for alpha, beta in product(
         range(basis_functions.number_of_basis_functions()), range(basis_functions.number_of_basis_functions())
     ):
@@ -34,18 +36,20 @@ def compute_local_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions, i
             return [
                 np.dot(
                     np.matmul(
-                        invTransposedJacobian,
-                        basis_functions.local_basis_functions_gradient(xi)[:, alpha],
+                        inv_transposed_jacobian,
+                        basis_functions.local_basis_functions_gradient(x)[:, alpha],
                     ),
                     np.matmul(
-                        invTransposedJacobian,
-                        basis_functions.local_basis_functions_gradient(xi)[:, beta],
+                        inv_transposed_jacobian,
+                        basis_functions.local_basis_functions_gradient(x)[:, beta],
                     ),
                 )
+                * mesh.determinant[index]
+                for x in xi.T
             ]
 
         local_stiffnessmatrix[alpha, beta] = scheme.integrate(
-            integrand, mesh.nodes[mesh.connectivitymatrix[index, :]]
+            integrand, np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0]])
         )
     return local_stiffnessmatrix
 

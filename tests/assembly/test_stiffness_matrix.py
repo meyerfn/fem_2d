@@ -1,10 +1,10 @@
 import unittest
 import numpy as np
 from mesh_set_up import MeshSetUp
-from assembly.stiffness_matrix import (
+from fem.assembly.stiffness_matrix import (
     compute_stiffnessmatrix,
 )
-from basis.linear_basis import LinearBasisFunctions
+from fem.basis.linear_basis import LinearBasisFunctions
 
 
 class MatrixAssemblyUnittest(MeshSetUp):

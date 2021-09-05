@@ -1,7 +1,34 @@
-from mesh.mesh import Mesh
 from typing import Callable
 
 import numpy as np
+import quadpy
+
+from fem.basis.basis import BasisFunctions
+from fem.mesh.mesh import Mesh
+
+
+def compute_loadvector_int(
+    rhs: Callable,
+    basis_functions: BasisFunctions,
+    dirichlet_data: Callable,
+    neumann_data: Callable,
+    mesh: Mesh,
+) -> np.array:
+    load_vector = np.zeros(shape=(mesh.number_of_nodes, 1))
+    number_of_basis_functions = basis_functions.number_of_basis_functions()
+    local_load_vector = np.zeros(shape=(number_of_basis_functions, 1))
+    scheme = quadpy.t2.get_good_scheme(3)
+    for i in range(mesh.number_of_elements):
+
+        def integrand(xi):
+            return mesh.determinant[i] * rhs(xi) * basis_functions.local_basis_functions(xi)
+
+        local_load_vector = scheme.integrate(integrand, np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0]]))
+        local_to_global = mesh.connectivitymatrix[i]
+        load_vector[np.ix_(local_to_global)] += local_load_vector
+    load_vector = add_dirichlet_data(load_vector, dirichlet_data, mesh)
+    load_vector = add_neumann_data(load_vector, neumann_data, mesh)
+    return load_vector
 
 
 def compute_loadvector(
@@ -11,12 +38,8 @@ def compute_loadvector(
     mesh: Mesh,
 ) -> np.array:
     load_vector = np.zeros(shape=(mesh.number_of_nodes, 1))
-    for i, _ in enumerate(mesh.pointmatrix, start=0):
-        (
-            node_one,
-            node_two,
-            node_three,
-        ) = mesh.pointmatrix[i]
+    for i in range(mesh.number_of_elements):
+        (node_one, node_two, node_three, _) = mesh.pointmatrix[i]
         area = 0.5 * mesh.determinant[i]
         local_load_vector = (
             1.0

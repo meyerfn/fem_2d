@@ -1,13 +1,11 @@
 from typing import Callable
-from mesh.mesh import Mesh
+
 import numpy as np
-from assembly.stiffness_matrix import (
-    compute_stiffnessmatrix,
-)
-from assembly.load_vector import (
-    compute_loadvector,
-)
-from basis.basis import BasisFunctions
+
+from fem.assembly.load_vector import compute_loadvector, compute_loadvector_int
+from fem.assembly.stiffness_matrix import compute_stiffnessmatrix
+from fem.basis.basis import BasisFunctions
+from fem.mesh.mesh import Mesh
 
 
 class Simulator:
@@ -28,8 +26,9 @@ class Simulator:
 
     def simulate(self):
         A = compute_stiffnessmatrix(self.mesh, self.basis_functions)
-        f = compute_loadvector(
+        f = compute_loadvector_int(
             self.rhs,
+            self.basis_functions,
             self.dirichlet_data,
             self.neumann_data,
             self.mesh,

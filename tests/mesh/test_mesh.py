@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
-import mesh.mesh as mesh
+from fem.mesh.mesh import QuadraticMesh
+import fem.mesh.mesh as mesh
 import matplotlib.pyplot as plt
 import itertools
 
@@ -64,3 +65,26 @@ class UnittestMesh(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_quadratic_mesh_contains_additional_points_on_edges_of_triangles():
+    x = np.linspace(0, 1, 8, endpoint=True)
+    nodes = []
+    for r in itertools.chain(itertools.product(x, x)):
+        nodes.append(r)
+    nodes = np.asarray(nodes)
+    neumann_edges = []
+    mesh = QuadraticMesh(nodes=nodes, neumann_edges=neumann_edges)
+
+    assert len(mesh.connectivitymatrix[0]) == 6
+    plt.triplot(
+        mesh.nodes[:, 0],
+        mesh.nodes[:, 1],
+        mesh.connectivitymatrix[:, 0:3],
+    )
+    plt.plot(
+        mesh.nodes[:, 0],
+        mesh.nodes[:, 1],
+        "o",
+    )
+    plt.show()

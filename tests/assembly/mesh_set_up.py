@@ -1,5 +1,5 @@
 import unittest
-from mesh.mesh import Mesh
+from fem.mesh.mesh import Mesh
 import numpy as np
 import itertools
 
