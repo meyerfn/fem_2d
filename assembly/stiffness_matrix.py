@@ -42,10 +42,11 @@ def compute_local_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions, i
                         basis_functions.local_basis_functions_gradient(xi)[:, beta],
                     ),
                 )
+                * mesh.determinant[index]
             ]
 
         local_stiffnessmatrix[alpha, beta] = scheme.integrate(
-            integrand, mesh.nodes[mesh.connectivitymatrix[index, :]]
+            integrand, np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0]])
         )
     return local_stiffnessmatrix
 
