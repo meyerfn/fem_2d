@@ -1,11 +1,17 @@
-from fem.mesh.mesh import LinearMesh, QuadraticMesh
-from fem.simulator.simulator import Simulator
+import itertools
+import logging
+
+import numpy as np
+
+from fem.analyze.error import compute_L2_error
 from fem.basis.linear_basis import LinearBasisFunctions
 from fem.basis.quadratic_basis import QuadraticBasisFunctions
+from fem.mesh.mesh import LinearMesh, QuadraticMesh
 from fem.plot.plot_solution import plot_solution
-from fem.analyze.error import compute_L2_error
-import itertools
-import numpy as np
+from fem.simulator.simulator import Simulator
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
 
 
 def set_up_nodes(number_of_nodes_1d: int) -> None:
@@ -23,34 +29,38 @@ def set_up_nodes(number_of_nodes_1d: int) -> None:
 #     return 0.0
 
 
-def rhs(node):
+def rhs(x, y):
     return -6.0
 
 
-def dirichlet_data(node):
-    return 1 + node[0] ** 2 + 2.0 * node[1] ** 2
+def dirichlet_data(x, y):
+    return 1 + x**2 + 2.0 * y**2
 
 
-def neumann_data(node):
+def neumann_data(x, y):
     return 0.0
 
 
-def exact_solution(node):
-    return 1 + node[0] ** 2 + 2.0 * node[1] ** 2
+def exact_solution(x, y):
+    return 1 + x**2 + 2.0 * y**2
 
 
 def main():
-    nodes = set_up_nodes(16)
-    # neumann_edges = np.array([[[0, 0], [0, 1]], [[0, 0], [1, 0]]])
-    neumann_edges = []
-    simulator = Simulator(
-        QuadraticMesh(nodes, neumann_edges), QuadraticBasisFunctions(), dirichlet_data, neumann_data, rhs
-    )
-    simulator.simulate()
+    for number_of_nodes_1d in [2, 4, 8, 16, 32, 64]:
+        logger.info(f"Compute solution for number_of_nodes_1d {number_of_nodes_1d}")
+        nodes = set_up_nodes(number_of_nodes_1d)
+        neumann_edges = np.array([[[0, 0], [0, 1]], [[0, 0], [1, 0]]])
+        neumann_edges = []
+        simulator = Simulator(
+            LinearMesh(nodes, neumann_edges), LinearBasisFunctions(), dirichlet_data, neumann_data, rhs
+        )
+        simulator.simulate()
 
-    plot_solution(simulator)
-    l2_error = compute_L2_error(simulator.mesh, simulator.solution, QuadraticBasisFunctions(), exact_solution)
-    np.savetxt(f'{"error.txt"}', X=[l2_error])
+        # plot_solution(simulator)
+        l2_error = compute_L2_error(
+            simulator.mesh, simulator.solution, LinearBasisFunctions(), exact_solution
+        )
+        np.savetxt(f"error_{number_of_nodes_1d}.txt", X=[l2_error])
 
 
 if __name__ == "__main__":

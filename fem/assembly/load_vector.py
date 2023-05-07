@@ -1,10 +1,13 @@
+import logging
 from typing import Callable
 
 import numpy as np
-import quadpy
+import scipy.integrate as integrate
 
 from fem.basis.basis import BasisFunctions
 from fem.mesh.mesh import Mesh
+
+logger = logging.getLogger()
 
 
 def compute_loadvector_int(
@@ -14,16 +17,21 @@ def compute_loadvector_int(
     neumann_data: Callable,
     mesh: Mesh,
 ) -> np.array:
-    load_vector = np.zeros(shape=(mesh.number_of_nodes, 1))
+    logger.info("Compute load vector")
+    load_vector = np.zeros(shape=(mesh.number_of_nodes))
     number_of_basis_functions = basis_functions.number_of_basis_functions()
-    local_load_vector = np.zeros(shape=(number_of_basis_functions, 1))
-    scheme = quadpy.t2.get_good_scheme(3)
+    local_load_vector = np.zeros(shape=(number_of_basis_functions,))
     for i in range(mesh.number_of_elements):
 
-        def integrand(xi):
-            return mesh.determinant[i] * rhs(xi) * basis_functions.local_basis_functions(xi)
+        def integrand(x, y, idx):
+            return mesh.determinant[i] * rhs(x, y) * basis_functions.local_basis_functions(x, y)[idx]
 
-        local_load_vector = scheme.integrate(integrand, np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0]]))
+        local_load_vector = np.array(
+            [
+                integrate.dblquad(integrand, a=0, b=1, gfun=lambda x: 0, hfun=lambda x: 1 - x, args=(j,))[0]
+                for j in range(number_of_basis_functions)
+            ]
+        )
         local_to_global = mesh.connectivitymatrix[i]
         load_vector[np.ix_(local_to_global)] += local_load_vector
     load_vector = add_dirichlet_data(load_vector, dirichlet_data, mesh)
@@ -37,7 +45,7 @@ def compute_loadvector(
     neumann_data: Callable,
     mesh: Mesh,
 ) -> np.array:
-    load_vector = np.zeros(shape=(mesh.number_of_nodes, 1))
+    load_vector = np.zeros(shape=(mesh.number_of_nodes))
     for i in range(mesh.number_of_elements):
         (node_one, node_two, node_three, _) = mesh.pointmatrix[i]
         area = 0.5 * mesh.determinant[i]
@@ -66,7 +74,7 @@ def add_dirichlet_data(
     mesh: Mesh,
 ) -> np.array:
     for index in mesh.boundary_indices:
-        load_vector[index] = dirichlet_data(mesh.nodes[index])
+        load_vector[index] = dirichlet_data(*mesh.nodes[index])
     return load_vector
 
 

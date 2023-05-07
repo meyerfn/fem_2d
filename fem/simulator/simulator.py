@@ -22,7 +22,7 @@ class Simulator:
         self.dirichlet_data = dirichlet_data
         self.neumann_data = neumann_data
         self.rhs = rhs
-        self.solution = np.zeros(shape=(self.mesh.number_of_nodes, 1))
+        self.solution = np.zeros(shape=(self.mesh.number_of_nodes))
 
     def simulate(self):
         A = compute_stiffnessmatrix(self.mesh, self.basis_functions)

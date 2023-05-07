@@ -1,13 +1,17 @@
+import logging
 from itertools import product
 
 import numpy as np
-import quadpy
+import scipy.integrate as integrate
 
 from fem.basis.basis import BasisFunctions
 from fem.mesh.mesh import Mesh
 
+logger = logging.getLogger()
+
 
 def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.array:
+    logger.info("Compute stiffness maxtrix")
     stiffness_matrix = np.zeros(
         shape=(
             mesh.number_of_nodes,
@@ -23,7 +27,6 @@ def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.a
 
 
 def compute_local_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions, index: int) -> np.array:
-    scheme = quadpy.t2.get_good_scheme(3)
     local_stiffnessmatrix = np.zeros(
         shape=(basis_functions.number_of_basis_functions(), basis_functions.number_of_basis_functions())
     )
@@ -32,25 +35,24 @@ def compute_local_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions, i
         range(basis_functions.number_of_basis_functions()), range(basis_functions.number_of_basis_functions())
     ):
 
-        def integrand(xi):
-            return [
+        def integrand(x, y):
+            return (
                 np.dot(
                     np.matmul(
                         inv_transposed_jacobian,
-                        basis_functions.local_basis_functions_gradient(x)[:, alpha],
+                        basis_functions.local_basis_functions_gradient(x, y)[:, alpha],
                     ),
                     np.matmul(
                         inv_transposed_jacobian,
-                        basis_functions.local_basis_functions_gradient(x)[:, beta],
+                        basis_functions.local_basis_functions_gradient(x, y)[:, beta],
                     ),
                 )
                 * mesh.determinant[index]
-                for x in xi.T
-            ]
+            )
 
-        local_stiffnessmatrix[alpha, beta] = scheme.integrate(
-            integrand, np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0]])
-        )
+        local_stiffnessmatrix[alpha, beta] = integrate.dblquad(
+            integrand, a=0, b=1, gfun=lambda x: 0, hfun=lambda x: 1 - x
+        )[0]
     return local_stiffnessmatrix
 
 

@@ -7,16 +7,16 @@ class LinearBasisFunctions(BasisFunctions):
     def number_of_basis_functions(self) -> int:
         return 3
 
-    def local_basis_functions(self, xi) -> np.array:
+    def local_basis_functions(self, x, y) -> np.array:
         return np.array(
             [
-                [1 - xi[0] - xi[1]],
-                [xi[0]],
-                [xi[1]],
+                [1 - x - y],
+                [x],
+                [y],
             ]
         )
 
-    def local_basis_functions_gradient(self, xi) -> np.array:
+    def local_basis_functions_gradient(self, x, y) -> np.array:
         return np.array(
             [
                 [-1.0, 1.0, 0.0],

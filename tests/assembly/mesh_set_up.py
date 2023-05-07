@@ -1,7 +1,9 @@
-import unittest
-from fem.mesh.mesh import Mesh
-import numpy as np
 import itertools
+import unittest
+
+import numpy as np
+
+from fem.mesh.mesh import Mesh
 
 
 class MeshSetUp(unittest.TestCase):

@@ -26,7 +26,7 @@ def plot_solution(simulator):
     my_cmap = plt.get_cmap("viridis")
     plot = ax.plot_trisurf(
         triang,
-        simulator.solution[:, 0],
+        simulator.solution.flatten(),
         cmap=my_cmap,
     )
     fig.colorbar(plot, ax=ax, shrink=0.5, aspect=5)

@@ -9,9 +9,9 @@ class BasisFunctions(ABC):
         pass
 
     @abstractclassmethod
-    def local_basis_functions(self, xi: np.array) -> np.array:
+    def local_basis_functions(self, x, y: np.array) -> np.array:
         pass
 
     @abstractclassmethod
-    def local_basis_functions_gradient(self, xi) -> np.array:
+    def local_basis_functions_gradient(self, x, y) -> np.array:
         pass

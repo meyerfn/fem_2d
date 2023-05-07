@@ -1,9 +1,11 @@
-import unittest
-import numpy as np
-from fem.mesh.mesh import QuadraticMesh
-import fem.mesh.mesh as mesh
-import matplotlib.pyplot as plt
 import itertools
+import unittest
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import fem.mesh.mesh as mesh
+from fem.mesh.mesh import QuadraticMesh
 
 
 class UnittestMesh(unittest.TestCase):

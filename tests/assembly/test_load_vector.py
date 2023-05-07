@@ -1,8 +1,8 @@
 import unittest
+
 from mesh_set_up import MeshSetUp
-from fem.assembly.load_vector import (
-    compute_loadvector,
-)
+
+from fem.assembly.load_vector import compute_loadvector
 
 
 class LoadVectorUnittest(MeshSetUp):
