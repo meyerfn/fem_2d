@@ -5,4 +5,5 @@ setup(
     version="1.0",
     description="2D FEM solver in python",
     packages=["fem"],  # same as name
+    scripts=["scripts/run_simulation.py"],
 )

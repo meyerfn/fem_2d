@@ -1,17 +1,11 @@
 import itertools
-import logging
 
 import numpy as np
 
 from fem.analyze.error import compute_L2_error
 from fem.basis.linear_basis import LinearBasisFunctions
-from fem.basis.quadratic_basis import QuadraticBasisFunctions
-from fem.mesh.mesh import LinearMesh, QuadraticMesh
-from fem.plot.plot_solution import plot_solution
+from fem.mesh.mesh import LinearMesh
 from fem.simulator.simulator import Simulator
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
 
 
 def set_up_nodes(number_of_nodes_1d: int) -> None:
@@ -20,17 +14,6 @@ def set_up_nodes(number_of_nodes_1d: int) -> None:
     for r in itertools.chain(itertools.product(x, x)):
         nodes.append(r)
     return np.asarray(nodes)
-
-
-# def rhs(node):
-#     return 1.0
-
-# def dirichlet_data(node):
-#     return 0.0
-
-
-def rhs(x, y):
-    return -6.0
 
 
 def dirichlet_data(x, y):
@@ -45,9 +28,22 @@ def exact_solution(x, y):
     return 1 + x**2 + 2.0 * y**2
 
 
-def main():
-    for number_of_nodes_1d in [2, 4, 8, 16, 32, 64]:
-        logger.info(f"Compute solution for number_of_nodes_1d {number_of_nodes_1d}")
+def rhs(x, y):
+    return -6.0
+
+
+def test_integration_same_l2_error_linear_elements():
+    expected_l2_errors = np.array(
+        [
+            1.173787790777267359e00,
+            4.601491134399846028e-01,
+            1.986708535724402147e-01,
+            8.991444503855471060e-02,
+            4.366051680121468825e-02,
+        ]
+    )
+    l2_errors = []
+    for number_of_nodes_1d in [2, 4, 8, 16, 32]:
         nodes = set_up_nodes(number_of_nodes_1d)
         neumann_edges = np.array([[[0, 0], [0, 1]], [[0, 0], [1, 0]]])
         neumann_edges = []
@@ -55,13 +51,7 @@ def main():
             LinearMesh(nodes, neumann_edges), LinearBasisFunctions(), dirichlet_data, neumann_data, rhs
         )
         simulator.simulate()
-
-        # plot_solution(simulator)
-        l2_error = compute_L2_error(
-            simulator.mesh, simulator.solution, LinearBasisFunctions(), exact_solution
+        l2_errors.append(
+            compute_L2_error(simulator.mesh, simulator.solution, LinearBasisFunctions(), exact_solution)
         )
-        np.savetxt(f"error_{number_of_nodes_1d}.txt", X=[l2_error])
-
-
-if __name__ == "__main__":
-    main()
+    np.testing.assert_array_equal(expected_l2_errors, l2_errors)

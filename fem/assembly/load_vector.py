@@ -18,7 +18,7 @@ def compute_loadvector_int(
     mesh: Mesh,
 ) -> np.array:
     logger.info("Compute load vector")
-    load_vector = np.zeros(shape=(mesh.number_of_nodes))
+    load_vector = np.zeros(shape=(mesh.number_of_nodes,))
     number_of_basis_functions = basis_functions.number_of_basis_functions()
     local_load_vector = np.zeros(shape=(number_of_basis_functions,))
     for i in range(mesh.number_of_elements):
