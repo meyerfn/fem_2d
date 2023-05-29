@@ -54,4 +54,4 @@ def test_integration_same_l2_error_linear_elements():
         l2_errors.append(
             compute_L2_error(simulator.mesh, simulator.solution, LinearBasisFunctions(), exact_solution)
         )
-    np.testing.assert_array_equal(expected_l2_errors, l2_errors)
+    np.testing.assert_allclose(expected_l2_errors, l2_errors, rtol=1e-14, atol=1e-15)
