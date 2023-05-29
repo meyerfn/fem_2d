@@ -3,8 +3,8 @@ import unittest
 import numpy as np
 from mesh_set_up import MeshSetUp
 
-from fem.assembly.stiffness_matrix import compute_stiffnessmatrix
-from fem.basis.basis import LinearBasisFunctions
+from fem.basis import LinearBasisFunctions
+from fem.stiffness_matrix import compute_stiffnessmatrix
 
 
 class MatrixAssemblyUnittest(MeshSetUp):

@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from fem.mesh.mesh import Mesh
+from fem.mesh import Mesh
 
 
 class MeshSetUp(unittest.TestCase):

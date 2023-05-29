@@ -4,8 +4,8 @@ from pathlib import Path
 
 import numpy as np
 
-from fem.error import compute_L2_error
 from fem.basis import LinearBasisFunctions
+from fem.error import compute_L2_error
 from fem.mesh import LinearMesh, QuadraticMesh
 from fem.plot.plot_solution import plot_solution
 from fem.simulator import Simulator

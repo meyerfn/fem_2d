@@ -2,8 +2,8 @@ import itertools
 
 import numpy as np
 
-from fem.error import compute_L2_error
 from fem.basis import LinearBasisFunctions
+from fem.error import compute_L2_error
 from fem.mesh import LinearMesh
 from fem.simulator import Simulator
 
