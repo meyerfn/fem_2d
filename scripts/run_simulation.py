@@ -4,11 +4,11 @@ from pathlib import Path
 
 import numpy as np
 
-from fem.analyze.error import compute_L2_error
-from fem.basis.basis import LinearBasisFunctions
-from fem.mesh.mesh import LinearMesh, QuadraticMesh
+from fem.error import compute_L2_error
+from fem.basis import LinearBasisFunctions
+from fem.mesh import LinearMesh, QuadraticMesh
 from fem.plot.plot_solution import plot_solution
-from fem.simulator.simulator import Simulator
+from fem.simulator import Simulator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()

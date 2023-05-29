@@ -2,10 +2,10 @@ from typing import Callable
 
 import numpy as np
 
-from fem.assembly.load_vector import compute_loadvector, compute_loadvector_int
-from fem.assembly.stiffness_matrix import compute_stiffnessmatrix
-from fem.basis.basis import BasisFunctions
-from fem.mesh.mesh import Mesh
+from fem.load_vector import compute_loadvector, compute_loadvector_int
+from fem.stiffness_matrix import compute_stiffnessmatrix
+from fem.basis import BasisFunctions
+from fem.mesh import Mesh
 
 
 class Simulator:

@@ -2,10 +2,10 @@ import itertools
 
 import numpy as np
 
-from fem.analyze.error import compute_L2_error
-from fem.basis.basis import LinearBasisFunctions
-from fem.mesh.mesh import LinearMesh
-from fem.simulator.simulator import Simulator
+from fem.error import compute_L2_error
+from fem.basis import LinearBasisFunctions
+from fem.mesh import LinearMesh
+from fem.simulator import Simulator
 
 
 def set_up_nodes(number_of_nodes_1d: int) -> None:

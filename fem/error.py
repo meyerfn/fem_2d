@@ -3,8 +3,8 @@ import logging
 import numpy as np
 import scipy.integrate as integrate
 
-from fem.basis.basis import BasisFunctions
-from fem.mesh.mesh import Mesh
+from fem.basis import BasisFunctions
+from fem.mesh import Mesh
 
 logger = logging.getLogger()
 
