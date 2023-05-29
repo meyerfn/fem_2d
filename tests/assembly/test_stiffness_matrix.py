@@ -4,7 +4,7 @@ import numpy as np
 from mesh_set_up import MeshSetUp
 
 from fem.assembly.stiffness_matrix import compute_stiffnessmatrix
-from fem.basis.linear_basis import LinearBasisFunctions
+from fem.basis.basis import LinearBasisFunctions
 
 
 class MatrixAssemblyUnittest(MeshSetUp):

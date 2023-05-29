@@ -5,8 +5,7 @@ from pathlib import Path
 import numpy as np
 
 from fem.analyze.error import compute_L2_error
-from fem.basis.linear_basis import LinearBasisFunctions
-from fem.basis.quadratic_basis import QuadraticBasisFunctions
+from fem.basis.basis import LinearBasisFunctions
 from fem.mesh.mesh import LinearMesh, QuadraticMesh
 from fem.plot.plot_solution import plot_solution
 from fem.simulator.simulator import Simulator
