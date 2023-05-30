@@ -1,8 +1,10 @@
+import itertools
 import logging
 import time
 
 import numpy as np
 import scipy.integrate as integrate
+import scipy.sparse
 
 from fem.basis import BasisFunctions
 from fem.mesh import Mesh
@@ -13,12 +15,9 @@ logger = logging.getLogger()
 def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.array:
     start_time = time.perf_counter()
     logger.info("Compute stiffness maxtrix")
-    stiffness_matrix = np.zeros(
-        shape=(
-            mesh.number_of_nodes,
-            mesh.number_of_nodes,
-        )
-    )
+    row = np.empty(shape=(0,))
+    col = np.empty(shape=(0,))
+    values = np.empty(shape=(0,))
     number_of_basis_functions = basis_functions.number_of_basis_functions()
     local_stiffness_matrix = np.zeros(shape=(number_of_basis_functions, number_of_basis_functions))
     integrand = (
@@ -70,11 +69,22 @@ def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.a
             scaling_matrix[0, 0] * K_xx + scaling_matrix[1, 1] * K_yy + scaling_matrix[0, 1] * (K_xy + K_xy.T)
         )
         local_to_global = mesh.connectivitymatrix[index]
-        stiffness_matrix[np.ix_(local_to_global, local_to_global)] += local_stiffness_matrix
-    stiffness_matrix = remove_dirichlet_nodes(stiffness_matrix, mesh.boundary_indices)
+        indices = list(zip(*list(itertools.product(local_to_global, local_to_global))))
+        col = np.append(col, np.array(indices[0]))
+        row = np.append(row, np.array(indices[1]))
+        values = np.append(values, local_stiffness_matrix.ravel())
+    stiff_matrix = scipy.sparse.coo_matrix(
+        (values, (row, col)),
+        shape=(
+            mesh.number_of_nodes,
+            mesh.number_of_nodes,
+        ),
+    )
+    stiff_matrix = stiff_matrix.tocsr()
+    stiff_matrix = remove_dirichlet_nodes(stiff_matrix, mesh.boundary_indices)
     end_time = time.perf_counter()
     logger.info(f"Computation took {end_time-start_time} seconds")
-    return stiffness_matrix
+    return stiff_matrix
 
 
 def remove_dirichlet_nodes(
@@ -82,5 +92,5 @@ def remove_dirichlet_nodes(
     boundary_indices: list,
 ) -> np.array:
     for row in boundary_indices:
-        stiffness_matrix[row, :] = np.eye(1, len(stiffness_matrix), row)
+        stiffness_matrix[row, :] = np.eye(1, stiffness_matrix.shape[0], row)
     return stiffness_matrix

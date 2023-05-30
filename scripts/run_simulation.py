@@ -4,13 +4,8 @@ from pathlib import Path
 
 import numpy as np
 
-from fem.basis import LinearBasisFunctions
-from fem.error import (
-    CentroidQuadrature,
-    Gauss4x4Quadrature,
-    compute_L2_error,
-    compute_L2_error_quadrature,
-)
+from fem.basis import LinearBasisFunctions, QuadraticBasisFunctions
+from fem.error import CentroidQuadrature, Gauss4x4Quadrature, compute_L2_error
 from fem.mesh import LinearMesh, QuadraticMesh
 from fem.plot.plot_solution import plot_solution
 from fem.simulator import Simulator

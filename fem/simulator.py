@@ -1,6 +1,7 @@
 from typing import Callable
 
 import numpy as np
+import scipy.sparse.linalg
 
 from fem.basis import BasisFunctions
 from fem.error import QuadratureRule
@@ -37,4 +38,4 @@ class Simulator:
             mesh=self.mesh,
             quadrature_rule=self.quadrature_rule,
         )
-        self.solution = np.linalg.solve(A, f)
+        self.solution = scipy.sparse.linalg.spsolve(A, f)
