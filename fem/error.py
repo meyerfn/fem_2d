@@ -81,7 +81,33 @@ class Gauss4x4Quadrature(QuadratureRule):
         )
 
 
-def compute_L2_error(mesh: Mesh, coefficients: np.array, basis_functions: BasisFunctions, exact_solution=0.0):
+def compute_L2_error(
+    mesh: Mesh,
+    coefficients: np.array,
+    basis_functions: BasisFunctions,
+    exact_solution=0.0,
+    quadrature_rule: QuadratureRule = None,
+) -> float:
+    if quadrature_rule:
+        return compute_L2_error_quadrature(
+            mesh=mesh,
+            coefficients=coefficients,
+            basis_functions=basis_functions,
+            exact_solution=exact_solution,
+            quadrature_rule=quadrature_rule,
+        )
+    else:
+        return compute_L2_error_scipy(
+            mesh=mesh,
+            coefficients=coefficients,
+            basis_functions=basis_functions,
+            exact_solution=exact_solution,
+        )
+
+
+def compute_L2_error_scipy(
+    mesh: Mesh, coefficients: np.array, basis_functions: BasisFunctions, exact_solution=0.0
+) -> float:
     start_time = time.perf_counter()
     logger.info("Compute L2-error")
     l2_error = 0.0
@@ -111,7 +137,7 @@ def compute_L2_error_quadrature(
     basis_functions: BasisFunctions,
     quadrature_rule: QuadratureRule,
     exact_solution=0.0,
-):
+) -> float:
     start_time = time.perf_counter()
     logger.info("Compute L2-error")
     l2_error = 0.0

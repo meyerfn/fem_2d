@@ -18,6 +18,33 @@ def compute_loadvector(
     dirichlet_data: Callable,
     neumann_data: Callable,
     mesh: Mesh,
+    quadrature_rule: QuadratureRule = None,
+) -> np.array:
+    if quadrature_rule:
+        return compute_loadvector_quadrature(
+            rhs=rhs,
+            basis_functions=basis_functions,
+            dirichlet_data=dirichlet_data,
+            neumann_data=neumann_data,
+            mesh=mesh,
+            quadrature_rule=quadrature_rule,
+        )
+    else:
+        return compute_loadvector_scipy(
+            rhs=rhs,
+            basis_functions=basis_functions,
+            dirichlet_data=dirichlet_data,
+            neumann_data=neumann_data,
+            mesh=mesh,
+        )
+
+
+def compute_loadvector_scipy(
+    rhs: Callable,
+    basis_functions: BasisFunctions,
+    dirichlet_data: Callable,
+    neumann_data: Callable,
+    mesh: Mesh,
 ) -> np.array:
     start_time = time.perf_counter()
     logger.info("Compute load vector")
@@ -36,7 +63,7 @@ def compute_loadvector(
         local_load_vector = mesh.determinant[i] * np.array(
             [
                 integrate.dblquad(integrand, a=0, b=1, gfun=lambda x: 0, hfun=lambda x: 1 - x, args=(j,))[0]
-                for j in range(number_of_basis_functions)
+                for j in range(basis_functions.number_of_basis_functions())
             ]
         )
         local_to_global = mesh.connectivitymatrix[i]

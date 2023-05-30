@@ -56,7 +56,7 @@ def main():
     paser = argparse.ArgumentParser()
     paser.add_argument("-o", "--output_directory", dest="output_directory", default=None)
     args = paser.parse_args()
-    for number_of_nodes_1d in [2, 4, 8, 16, 32, 64, 128]:
+    for number_of_nodes_1d in [2, 4, 8, 16, 32, 64]:
         logger.info(f"Compute solution for number_of_nodes_1d {number_of_nodes_1d}")
         nodes = set_up_nodes(number_of_nodes_1d)
         neumann_edges = np.array([[[0, 0], [0, 1]], [[0, 0], [1, 0]]])
@@ -67,10 +67,11 @@ def main():
             dirichlet_data=dirichlet_data,
             neumann_data=neumann_data,
             rhs=rhs,
+            quadrature_rule=Gauss4x4Quadrature(),
         )
         simulator.simulate()
         # plot_solution(simulator)
-        l2_error = compute_L2_error_quadrature(
+        l2_error = compute_L2_error(
             mesh=simulator.mesh,
             coefficients=simulator.solution,
             basis_functions=LinearBasisFunctions(),

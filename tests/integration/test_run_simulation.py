@@ -1,6 +1,7 @@
 import itertools
 
 import numpy as np
+import pytest
 
 from fem.basis import LinearBasisFunctions
 from fem.error import Gauss4x4Quadrature, compute_L2_error, compute_L2_error_quadrature
@@ -32,22 +33,47 @@ def rhs(x, y):
     return -6.0
 
 
-def test_integration_same_l2_error_linear_elements():
-    expected_l2_errors = np.array(
-        [
-            0.5270462766947298,
-            0.057188368133555115,
-            0.010295844087722696,
-            0.0021949913941173185,
-            0.0005155384834049227,
-        ]
-    )
+@pytest.mark.parametrize(
+    ["quadrature_rule", "expected_l2_errors"],
+    [
+        (
+            None,
+            np.array(
+                [
+                    0.5270462766947298,
+                    0.057188368133555115,
+                    0.010295844087722696,
+                    0.0021949913941173185,
+                    0.0005155384834049227,
+                ]
+            ),
+        ),
+        (
+            Gauss4x4Quadrature(),
+            np.array(
+                [
+                    0.5270462766486744,
+                    0.057188368155245604,
+                    0.010295844122798898,
+                    0.0021949914311107733,
+                    0.0005155385220791442,
+                ]
+            ),
+        ),
+    ],
+)
+def test_integration_same_l2_error_linear_elements(quadrature_rule, expected_l2_errors):
     l2_errors = []
     for number_of_nodes_1d in [2, 4, 8, 16, 32]:
         nodes = set_up_nodes(number_of_nodes_1d)
         neumann_edges = []
         simulator = Simulator(
-            LinearMesh(nodes, neumann_edges), LinearBasisFunctions(), dirichlet_data, neumann_data, rhs
+            mesh=LinearMesh(nodes, neumann_edges),
+            basis_functions=LinearBasisFunctions(),
+            dirichlet_data=dirichlet_data,
+            neumann_data=neumann_data,
+            rhs=rhs,
+            quadrature_rule=quadrature_rule,
         )
         simulator.simulate()
         l2_errors.append(
@@ -56,37 +82,43 @@ def test_integration_same_l2_error_linear_elements():
                 coefficients=simulator.solution,
                 basis_functions=LinearBasisFunctions(),
                 exact_solution=exact_solution,
+                quadrature_rule=quadrature_rule,
             )
         )
 
     np.testing.assert_allclose(expected_l2_errors, l2_errors, rtol=1e-14, atol=1e-15)
 
 
-def test_integration_same_l2_error_linear_elements_with_full_quadrature():
-    expected_l2_errors = np.array(
-        [
-            0.7453559924347977,
-            0.08087656581742594,
-            0.014560522343638988,
-            0.0031041865985840704,
-            0.0007290815150936641,
-        ]
-    )
-    l2_errors = []
-    for number_of_nodes_1d in [2, 4, 8, 16, 32]:
-        nodes = set_up_nodes(number_of_nodes_1d)
-        neumann_edges = []
-        simulator = Simulator(
-            LinearMesh(nodes, neumann_edges), LinearBasisFunctions(), dirichlet_data, neumann_data, rhs
-        )
-        simulator.simulate()
-        l2_errors.append(
-            compute_L2_error_quadrature(
-                mesh=simulator.mesh,
-                coefficients=simulator.solution,
-                basis_functions=LinearBasisFunctions(),
-                quadrature_rule=Gauss4x4Quadrature(),
-                exact_solution=exact_solution,
-            )
-        )
-    np.testing.assert_allclose(expected_l2_errors, l2_errors, rtol=1e-14, atol=1e-15)
+# def test_integration_same_l2_error_linear_elements_with_full_quadrature():
+#     expected_l2_errors = np.array(
+#         [
+#             0.5270462766486744,
+#             0.057188368155245604,
+#             0.010295844122798898,
+#             0.0021949914311107733,
+#             0.0005155385220791442,
+#         ]
+#     )
+#     l2_errors = []
+#     for number_of_nodes_1d in [2, 4, 8, 16, 32]:
+#         nodes = set_up_nodes(number_of_nodes_1d)
+#         neumann_edges = []
+#         simulator = Simulator(
+#             mesh=LinearMesh(nodes, neumann_edges),
+#             basis_functions=LinearBasisFunctions(),
+#             dirichlet_data=dirichlet_data,
+#             neumann_data=neumann_data,
+#             rhs=rhs,
+#             quadrature_rule=Gauss4x4Quadrature(),
+#         )
+#         simulator.simulate()
+#         l2_errors.append(
+#             compute_L2_error(
+#                 mesh=simulator.mesh,
+#                 coefficients=simulator.solution,
+#                 basis_functions=LinearBasisFunctions(),
+#                 exact_solution=exact_solution,
+#                 quadrature_rule=Gauss4x4Quadrature(),
+#             )
+#         )
+#     np.testing.assert_allclose(expected_l2_errors, l2_errors, rtol=1e-14, atol=1e-15)
