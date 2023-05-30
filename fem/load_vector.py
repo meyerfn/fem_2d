@@ -6,12 +6,13 @@ import numpy as np
 import scipy.integrate as integrate
 
 from fem.basis import BasisFunctions
+from fem.error import QuadratureRule
 from fem.mesh import Mesh
 
 logger = logging.getLogger()
 
 
-def compute_loadvector_int(
+def compute_loadvector(
     rhs: Callable,
     basis_functions: BasisFunctions,
     dirichlet_data: Callable,
@@ -28,7 +29,7 @@ def compute_loadvector_int(
 
         def integrand(x, y, idx):
             transformed_points = np.add(
-                p1, np.matmul(np.array([p2 - p1, p3 - p1]), np.array([x, y])).flatten()
+                p1, np.matmul(np.array([p2 - p1, p3 - p1]).T, np.array([x, y])).flatten()
             )
             return rhs(*transformed_points) * basis_functions.local_basis_functions(x, y)[idx]
 
@@ -47,32 +48,38 @@ def compute_loadvector_int(
     return load_vector
 
 
-def compute_loadvector(
+def compute_loadvector_quadrature(
     rhs: Callable,
+    basis_functions: BasisFunctions,
     dirichlet_data: Callable,
     neumann_data: Callable,
     mesh: Mesh,
+    quadrature_rule: QuadratureRule,
 ) -> np.array:
-    load_vector = np.zeros(shape=(mesh.number_of_nodes))
-    for i in range(mesh.number_of_elements):
-        (node_one, node_two, node_three, _) = mesh.pointmatrix[i]
-        area = 0.5 * mesh.determinant[i]
-        local_load_vector = (
-            1.0
-            / 3.0
-            * area
-            * np.array(
-                [
-                    [rhs(node_one)],
-                    [rhs(node_two)],
-                    [rhs(node_three)],
-                ]
-            )
+    start_time = time.perf_counter()
+    logger.info("Compute load vector")
+    load_vector = np.zeros(shape=(mesh.number_of_nodes,))
+    quadrature_matrix = np.array(
+        [
+            basis_functions.local_basis_functions(*quadrature_point).flatten()
+            for quadrature_point in quadrature_rule.points
+        ]
+    ).T
+    for index in range(mesh.number_of_elements):
+        [p1, p2, p3] = mesh.pointmatrix[index][0:3]
+        transformed_points = (
+            p1[:, None] + np.matmul(np.array([p2 - p1, p3 - p1]).T, quadrature_rule.points.T)
+        ).T
+        rhs_quadrature_points = rhs(transformed_points[:, 0], transformed_points[:, 1])
+        local_load_vector = mesh.determinant[index] * np.matmul(
+            quadrature_matrix * rhs_quadrature_points, quadrature_rule.weights
         )
-        local_to_global = mesh.connectivitymatrix[i]
-        load_vector[np.ix_(local_to_global)] += local_load_vector
+        local_to_global = mesh.connectivitymatrix[index]
+        load_vector[np.ix_(local_to_global)] += local_load_vector.flatten()
     load_vector = add_dirichlet_data(load_vector, dirichlet_data, mesh)
     load_vector = add_neumann_data(load_vector, neumann_data, mesh)
+    end_time = time.perf_counter()
+    logger.info(f"Computation took {end_time-start_time} seconds")
     return load_vector
 
 

@@ -5,7 +5,12 @@ from pathlib import Path
 import numpy as np
 
 from fem.basis import LinearBasisFunctions
-from fem.error import compute_L2_error
+from fem.error import (
+    CentroidQuadrature,
+    Gauss4x4Quadrature,
+    compute_L2_error,
+    compute_L2_error_quadrature,
+)
 from fem.mesh import LinearMesh, QuadraticMesh
 from fem.plot.plot_solution import plot_solution
 from fem.simulator import Simulator
@@ -32,7 +37,7 @@ def set_up_nodes(number_of_nodes_1d: int) -> None:
 
 
 def rhs(x, y):
-    return -6.0
+    return np.ones_like(x) * -6.0
 
 
 def dirichlet_data(x, y):
@@ -51,18 +56,26 @@ def main():
     paser = argparse.ArgumentParser()
     paser.add_argument("-o", "--output_directory", dest="output_directory", default=None)
     args = paser.parse_args()
-    for number_of_nodes_1d in [32]:
+    for number_of_nodes_1d in [2, 4, 8, 16, 32, 64, 128]:
         logger.info(f"Compute solution for number_of_nodes_1d {number_of_nodes_1d}")
         nodes = set_up_nodes(number_of_nodes_1d)
         neumann_edges = np.array([[[0, 0], [0, 1]], [[0, 0], [1, 0]]])
         neumann_edges = []
         simulator = Simulator(
-            LinearMesh(nodes, neumann_edges), LinearBasisFunctions(), dirichlet_data, neumann_data, rhs
+            mesh=LinearMesh(nodes, neumann_edges),
+            basis_functions=LinearBasisFunctions(),
+            dirichlet_data=dirichlet_data,
+            neumann_data=neumann_data,
+            rhs=rhs,
         )
         simulator.simulate()
         # plot_solution(simulator)
-        l2_error = compute_L2_error(
-            simulator.mesh, simulator.solution, LinearBasisFunctions(), exact_solution
+        l2_error = compute_L2_error_quadrature(
+            mesh=simulator.mesh,
+            coefficients=simulator.solution,
+            basis_functions=LinearBasisFunctions(),
+            exact_solution=exact_solution,
+            quadrature_rule=Gauss4x4Quadrature(),
         )
         if args.output_directory:
             logger.info(f"Save result to {args.output_directory}")

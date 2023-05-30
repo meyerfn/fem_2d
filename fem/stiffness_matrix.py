@@ -1,6 +1,5 @@
 import logging
 import time
-from itertools import product
 
 import numpy as np
 import scipy.integrate as integrate

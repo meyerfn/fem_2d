@@ -3,7 +3,8 @@ from typing import Callable
 import numpy as np
 
 from fem.basis import BasisFunctions
-from fem.load_vector import compute_loadvector, compute_loadvector_int
+from fem.error import Gauss4x4Quadrature
+from fem.load_vector import compute_loadvector, compute_loadvector_quadrature
 from fem.mesh import Mesh
 from fem.stiffness_matrix import compute_stiffnessmatrix
 
@@ -26,11 +27,19 @@ class Simulator:
 
     def simulate(self):
         A = compute_stiffnessmatrix(self.mesh, self.basis_functions)
-        f = compute_loadvector_int(
-            self.rhs,
-            self.basis_functions,
-            self.dirichlet_data,
-            self.neumann_data,
-            self.mesh,
+        # f = compute_loadvector(
+        #     rhs=self.rhs,
+        #     basis_functions=self.basis_functions,
+        #     dirichlet_data=self.dirichlet_data,
+        #     neumann_data=self.neumann_data,
+        #     mesh=self.mesh,
+        # )
+        f = compute_loadvector_quadrature(
+            rhs=self.rhs,
+            basis_functions=self.basis_functions,
+            dirichlet_data=self.dirichlet_data,
+            neumann_data=self.neumann_data,
+            mesh=self.mesh,
+            quadrature_rule=Gauss4x4Quadrature(),
         )
         self.solution = np.linalg.solve(A, f)
