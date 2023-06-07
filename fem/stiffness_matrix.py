@@ -15,11 +15,7 @@ logger = logging.getLogger()
 def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.array:
     start_time = time.perf_counter()
     logger.info("Compute stiffness maxtrix")
-    row = np.empty(shape=(0,))
-    col = np.empty(shape=(0,))
-    values = np.empty(shape=(0,))
     number_of_basis_functions = basis_functions.number_of_basis_functions()
-    local_stiffness_matrix = np.zeros(shape=(number_of_basis_functions, number_of_basis_functions))
     integrand = (
         lambda y, x, alpha, beta, first_direction, second_direction: basis_functions.local_basis_functions_gradient(
             x, y
@@ -61,20 +57,15 @@ def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.a
             for beta in range(number_of_basis_functions)
         ]
     )
-    for index in range(mesh.number_of_elements):
-        scaling_matrix = np.linalg.inv((mesh.jacobian[index])) @ np.linalg.inv(
-            np.transpose(mesh.jacobian[index])
-        )
-        local_stiffness_matrix = mesh.determinant[index] * (
-            scaling_matrix[0, 0] * K_xx + scaling_matrix[1, 1] * K_yy + scaling_matrix[0, 1] * (K_xy + K_xy.T)
-        )
-        local_to_global = mesh.connectivitymatrix[index]
-        indices = list(zip(*list(itertools.product(local_to_global, local_to_global))))
-        col = np.append(col, np.array(indices[0]))
-        row = np.append(row, np.array(indices[1]))
-        values = np.append(values, local_stiffness_matrix.ravel())
+    inv_jacobian = np.linalg.inv(mesh.jacobian)
+    scaling_matrix = inv_jacobian @ np.transpose(inv_jacobian, axes=(0, 2, 1))
+    scaling_matrix = scaling_matrix.reshape((scaling_matrix.shape[0], -1))
+    stiffness_matrix = np.array([K_xx.ravel(), K_xy.ravel(), K_xy.T.ravel(), K_yy.ravel()]).T
+    result = mesh.determinant * (stiffness_matrix @ scaling_matrix.T)
+    row = np.repeat(mesh.connectivitymatrix, repeats=3)
+    col = np.repeat(mesh.connectivitymatrix, repeats=3, axis=0).ravel()
     stiff_matrix = scipy.sparse.coo_matrix(
-        (values, (row, col)),
+        (result.ravel("F"), (row, col)),
         shape=(
             mesh.number_of_nodes,
             mesh.number_of_nodes,

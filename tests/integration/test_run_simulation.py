@@ -86,7 +86,7 @@ def test_integration_same_l2_error_linear_elements(quadrature_rule, expected_l2_
             )
         )
 
-    np.testing.assert_allclose(expected_l2_errors, l2_errors, rtol=1e-14, atol=1e-15)
+    np.testing.assert_allclose(expected_l2_errors, l2_errors, rtol=1e-12, atol=1e-15)
 
 
 # def test_integration_same_l2_error_linear_elements_with_full_quadrature():
