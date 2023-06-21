@@ -9,6 +9,7 @@ from scipy.sparse import coo_array
 from fem.basis import BasisFunctions
 from fem.error import QuadratureRule
 from fem.mesh import Mesh
+from fem.utils import timing
 
 logger = logging.getLogger()
 
@@ -40,6 +41,7 @@ def compute_loadvector(
         )
 
 
+@timing
 def compute_loadvector_scipy(
     rhs: Callable,
     basis_functions: BasisFunctions,
@@ -47,7 +49,6 @@ def compute_loadvector_scipy(
     neumann_data: Callable,
     mesh: Mesh,
 ) -> np.array:
-    start_time = time.perf_counter()
     logger.info("Compute load vector")
     load_vector = np.zeros(shape=(mesh.number_of_nodes,))
     number_of_basis_functions = basis_functions.number_of_basis_functions()
@@ -71,11 +72,10 @@ def compute_loadvector_scipy(
         load_vector[np.ix_(local_to_global)] += local_load_vector
     load_vector = add_dirichlet_data(load_vector, dirichlet_data, mesh)
     load_vector = add_neumann_data(load_vector, neumann_data, mesh)
-    end_time = time.perf_counter()
-    logger.info(f"Computation took {end_time-start_time} seconds")
     return load_vector
 
 
+@timing
 def compute_loadvector_quadrature(
     rhs: Callable,
     basis_functions: BasisFunctions,
@@ -84,7 +84,6 @@ def compute_loadvector_quadrature(
     mesh: Mesh,
     quadrature_rule: QuadratureRule,
 ) -> np.array:
-    start_time = time.perf_counter()
     logger.info("Compute load vector")
     load_vector = np.zeros(shape=(mesh.number_of_nodes,))
     quadrature_matrix = np.array(
@@ -109,8 +108,6 @@ def compute_loadvector_quadrature(
     load_vector = np.squeeze(load_vector.toarray())
     load_vector = add_dirichlet_data(load_vector, dirichlet_data, mesh)
     load_vector = add_neumann_data(load_vector, neumann_data, mesh)
-    end_time = time.perf_counter()
-    logger.info(f"Computation took {end_time-start_time} seconds")
     return load_vector
 
 

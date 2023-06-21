@@ -7,6 +7,7 @@ import scipy.integrate as integrate
 
 from fem.basis import BasisFunctions
 from fem.mesh import Mesh
+from fem.utils import timing
 
 logger = logging.getLogger()
 
@@ -105,10 +106,10 @@ def compute_L2_error(
         )
 
 
+@timing
 def compute_L2_error_scipy(
     mesh: Mesh, coefficients: np.array, basis_functions: BasisFunctions, exact_solution=0.0
 ) -> float:
-    start_time = time.perf_counter()
     logger.info("Compute L2-error")
     l2_error = 0.0
     for index in range(mesh.number_of_elements):
@@ -126,11 +127,10 @@ def compute_L2_error_scipy(
             mesh.determinant[index]
             * integrate.dblquad(integrand, a=0, b=1, gfun=lambda x: 0, hfun=lambda x: 1 - x)[0]
         )
-    end_time = time.perf_counter()
-    logger.info(f"Computation took {end_time-start_time} seconds")
     return np.sqrt(l2_error)
 
 
+@timing
 def compute_L2_error_quadrature(
     mesh: Mesh,
     coefficients: np.array,
@@ -138,7 +138,6 @@ def compute_L2_error_quadrature(
     quadrature_rule: QuadratureRule,
     exact_solution=0.0,
 ) -> float:
-    start_time = time.perf_counter()
     logger.info("Compute L2-error")
     l2_error = 0.0
     quadrature_points = quadrature_rule.points
@@ -160,6 +159,4 @@ def compute_L2_error_quadrature(
         (local_approximation - exact_solution_quadrature_points) ** 2, quadrature_rule.weights
     )
     l2_error = np.sum(mesh.determinant * local_error)
-    end_time = time.perf_counter()
-    logger.info(f"Computation took {end_time-start_time} seconds")
     return np.sqrt(l2_error)

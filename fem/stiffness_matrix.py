@@ -8,12 +8,13 @@ import scipy.sparse
 
 from fem.basis import BasisFunctions
 from fem.mesh import Mesh
+from fem.utils import timing
 
 logger = logging.getLogger()
 
 
+@timing
 def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.array:
-    start_time = time.perf_counter()
     logger.info("Compute stiffness maxtrix")
     number_of_basis_functions = basis_functions.number_of_basis_functions()
     integrand = (
@@ -70,8 +71,6 @@ def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.a
     stiff_matrix = stiff_matrix.tocsr()
     boundary_indices = np.array(list(mesh.boundary_indices), dtype=int)
     stiff_matrix = remove_dirichlet_nodes(stiff_matrix, boundary_indices)
-    end_time = time.perf_counter()
-    logger.info(f"Computation took {end_time-start_time} seconds")
     return stiff_matrix
 
 
