@@ -148,19 +148,18 @@ def compute_L2_error_quadrature(
             for quadrature_point in quadrature_points
         ]
     )
-    for index in range(mesh.number_of_elements):
-        [p1, p2, p3] = mesh.pointmatrix[index][0:3]
-        local_coefficients = coefficients[mesh.connectivitymatrix[index, :]]
-        transformed_points = (
-            p1[:, None] + np.matmul(np.array([p2 - p1, p3 - p1]).T, quadrature_rule.points.T)
-        ).T
-
-        exact_solution_quadrature_points = exact_solution(transformed_points[:, 0], transformed_points[:, 1])
-        local_approximation = np.dot(quadrature_matrix, local_coefficients)
-        local_error = np.dot(
-            (local_approximation - exact_solution_quadrature_points) ** 2, quadrature_rule.weights
-        )
-        l2_error += mesh.determinant[index] * local_error
+    p1_vec = mesh.pointmatrix[:, 0, :]
+    transformed_points = np.transpose(
+        p1_vec[..., None] + np.matmul(mesh.transformationmatrix, quadrature_rule.points.T), axes=(0, 2, 1)
+    )
+    exact_solution_quadrature_points = exact_solution(
+        transformed_points[:, :, 0], transformed_points[:, :, 1]
+    )
+    local_approximation = np.dot(coefficients[mesh.connectivitymatrix], quadrature_matrix.T)
+    local_error = np.dot(
+        (local_approximation - exact_solution_quadrature_points) ** 2, quadrature_rule.weights
+    )
+    l2_error = np.sum(mesh.determinant * local_error)
     end_time = time.perf_counter()
     logger.info(f"Computation took {end_time-start_time} seconds")
     return np.sqrt(l2_error)
