@@ -10,6 +10,7 @@ class Mesh:
         self.pointmatrix = nodes[self.connectivitymatrix]
         self.neighbors = triangulation.neighbors
         self._jacobian_and_determinant()
+        self._transformationmatrix()
 
     @property
     def number_of_nodes(self):
@@ -38,6 +39,13 @@ class Mesh:
             self.jacobian.append(local_jacobian)
             local_determinant = np.linalg.det(local_jacobian)
             self.determinant.append(local_determinant)
+        self.determinant = np.array(self.determinant)
+
+    def _transformationmatrix(self):
+        p1 = self.pointmatrix[:, 0, :]
+        p2 = self.pointmatrix[:, 1, :]
+        p3 = self.pointmatrix[:, 2, :]
+        self.transformationmatrix = np.transpose(np.array([p2 - p1, p3 - p1]), axes=(1, 2, 0))
 
 
 class LinearMesh(Mesh):

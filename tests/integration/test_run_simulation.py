@@ -30,7 +30,7 @@ def exact_solution(x, y):
 
 
 def rhs(x, y):
-    return -6.0
+    return np.ones_like(x) * -6.0
 
 
 @pytest.mark.parametrize(

@@ -4,6 +4,7 @@ from typing import Callable
 
 import numpy as np
 import scipy.integrate as integrate
+from scipy.sparse import coo_array
 
 from fem.basis import BasisFunctions
 from fem.error import QuadratureRule
@@ -92,17 +93,20 @@ def compute_loadvector_quadrature(
             for quadrature_point in quadrature_rule.points
         ]
     ).T
-    for index in range(mesh.number_of_elements):
-        [p1, p2, p3] = mesh.pointmatrix[index][0:3]
-        transformed_points = (
-            p1[:, None] + np.matmul(np.array([p2 - p1, p3 - p1]).T, quadrature_rule.points.T)
-        ).T
-        rhs_quadrature_points = rhs(transformed_points[:, 0], transformed_points[:, 1])
-        local_load_vector = mesh.determinant[index] * np.matmul(
-            quadrature_matrix * rhs_quadrature_points, quadrature_rule.weights
+    p1_vec = mesh.pointmatrix[:, 0, :]
+    transformed_points_vec = np.transpose(
+        p1_vec[..., None] + np.matmul(mesh.transformationmatrix, quadrature_rule.points.T), axes=(0, 2, 1)
+    )
+    rhs_quadrature_points_vec = rhs(transformed_points_vec[:, :, 0], transformed_points_vec[:, :, 1])
+    basis_times_rhs = np.transpose(quadrature_matrix[..., None] * rhs_quadrature_points_vec.T, axes=(2, 0, 1))
+    load_vector = mesh.determinant[..., None] * np.matmul(basis_times_rhs, quadrature_rule.weights)
+    load_vector = coo_array(
+        (
+            load_vector.flatten(),
+            (mesh.connectivitymatrix.ravel(), np.zeros_like(mesh.connectivitymatrix.ravel())),
         )
-        local_to_global = mesh.connectivitymatrix[index]
-        load_vector[np.ix_(local_to_global)] += local_load_vector.flatten()
+    )
+    load_vector = np.squeeze(load_vector.toarray())
     load_vector = add_dirichlet_data(load_vector, dirichlet_data, mesh)
     load_vector = add_neumann_data(load_vector, neumann_data, mesh)
     end_time = time.perf_counter()

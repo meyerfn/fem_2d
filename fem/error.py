@@ -30,7 +30,7 @@ class CentroidQuadrature(QuadratureRule):
 
     @property
     def weights(self) -> np.array:
-        return 0.5 * np.array([[1.0]])
+        return 0.5 * np.array([1.0])
 
 
 class Gauss4x4Quadrature(QuadratureRule):
@@ -61,22 +61,22 @@ class Gauss4x4Quadrature(QuadratureRule):
     def weights(self) -> np.array:
         return 0.5 * np.array(
             [
-                [0.04713673637581137],
-                [0.07077613579259895],
-                [0.04516809856187617],
-                [0.01084645180365496],
-                [0.08837017702418863],
-                [0.1326884322074010],
-                [0.08467944903812383],
-                [0.02033451909634504],
-                [0.08837017702418863],
-                [0.1326884322074010],
-                [0.08467944903812383],
-                [0.02033451909634504],
-                [0.04713673637581137],
-                [0.07077613579259895],
-                [0.04516809856187617],
-                [0.01084645180365496],
+                0.04713673637581137,
+                0.07077613579259895,
+                0.04516809856187617,
+                0.01084645180365496,
+                0.08837017702418863,
+                0.1326884322074010,
+                0.08467944903812383,
+                0.02033451909634504,
+                0.08837017702418863,
+                0.1326884322074010,
+                0.08467944903812383,
+                0.02033451909634504,
+                0.04713673637581137,
+                0.07077613579259895,
+                0.04516809856187617,
+                0.01084645180365496,
             ]
         )
 
@@ -160,7 +160,7 @@ def compute_L2_error_quadrature(
         local_error = np.dot(
             (local_approximation - exact_solution_quadrature_points) ** 2, quadrature_rule.weights
         )
-        l2_error += mesh.determinant[index] * local_error[-1]
+        l2_error += mesh.determinant[index] * local_error
     end_time = time.perf_counter()
     logger.info(f"Computation took {end_time-start_time} seconds")
     return np.sqrt(l2_error)
