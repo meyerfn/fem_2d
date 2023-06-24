@@ -63,8 +63,8 @@ def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.a
     scaling_matrix = scaling_matrix.reshape((scaling_matrix.shape[0], -1))
     stiffness_matrix = np.array([K_xx.ravel(), K_xy.ravel(), K_xy.T.ravel(), K_yy.ravel()]).T
     result = (mesh.determinant * (stiffness_matrix @ scaling_matrix.T)).ravel("F")
-    row = np.repeat(mesh.connectivitymatrix, repeats=3)
-    col = np.repeat(mesh.connectivitymatrix, repeats=3, axis=0).ravel()
+    row = np.repeat(mesh.connectivitymatrix, repeats=mesh.connectivitymatrix.shape[1])
+    col = np.repeat(mesh.connectivitymatrix, repeats=mesh.connectivitymatrix.shape[1], axis=0).ravel()
     stiff_matrix = scipy.sparse.coo_matrix(
         (result, (row, col)),
     )
