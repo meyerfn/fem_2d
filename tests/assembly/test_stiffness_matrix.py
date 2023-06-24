@@ -12,8 +12,10 @@ class MatrixAssemblyUnittest(MeshSetUp):
         basis_functions = LinearBasisFunctions()
         stiffness_matrix = compute_stiffnessmatrix(self.mesh, basis_functions)
         np.testing.assert_array_almost_equal(
-            stiffness_matrix[self.mesh.free_indices[0], :],
-            np.array([0, -1, 0, -1, 4, -1, 0, -1, 0]),
+            stiffness_matrix.todense()[
+                np.array(list(set(range(self.mesh.number_of_elements)) - self.mesh.boundary_indices)), :
+            ],
+            np.array([[0, -1, 0, -1, 4, -1, 0, -1, 0]]),
         )
 
 
