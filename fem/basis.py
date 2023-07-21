@@ -24,9 +24,9 @@ class LinearBasisFunctions(BasisFunctions):
     def local_basis_functions(self, x, y) -> np.array:
         return np.array(
             [
-                [1 - x - y],
-                [x],
-                [y],
+                1 - x - y,
+                x,
+                y,
             ]
         )
 
@@ -46,12 +46,12 @@ class QuadraticBasisFunctions(BasisFunctions):
     def local_basis_functions(self, x, y) -> np.array:
         return np.array(
             [
-                [(1 - x - y) * (1 - 2 * x - 2 * y)],
-                [x * (2 * x - 1)],
-                [y * (2 * y - 1)],
-                [4 * x * y],
-                [4 * y * (1 - x - y)],
-                [4 * x * (1 - x - y)],
+                (1 - x - y) * (1 - 2 * x - 2 * y),
+                x * (2 * x - 1),
+                y * (2 * y - 1),
+                4 * x * y,
+                4 * y * (1 - x - y),
+                4 * x * (1 - x - y),
             ]
         )
 

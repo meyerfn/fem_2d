@@ -17,14 +17,13 @@ logger = logging.getLogger()
 def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.array:
     logger.info("Compute stiffness maxtrix")
     number_of_basis_functions = basis_functions.number_of_basis_functions()
-    integrand = (
-        lambda y, x, alpha, beta, first_direction, second_direction: basis_functions.local_basis_functions_gradient(
-            x, y
-        )[
-            first_direction, alpha
-        ]
-        * basis_functions.local_basis_functions_gradient(y, x)[second_direction, beta]
-    )
+
+    def integrand(x, y, alpha, beta, first_direction, second_direction):
+        return (
+            basis_functions.local_basis_functions_gradient(x, y)[first_direction, alpha]
+            * basis_functions.local_basis_functions_gradient(x, y)[second_direction, beta]
+        )
+
     K_xx = np.array(
         [
             [

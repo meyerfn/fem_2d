@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.spatial import Delaunay
+from fem.utils import timing
 
 
 class Mesh:
@@ -64,6 +65,7 @@ class QuadraticMesh(Mesh):
             self.nodes, self.neighbors, self.connectivitymatrix, neumann_edges, add_midpoint=True
         )
 
+    @timing
     def _update_mesh_with_edge_points(self) -> None:
         updated_point_matrix = np.zeros(
             shape=(self.pointmatrix.shape[0], self.pointmatrix.shape[1] + 3, self.pointmatrix.shape[2])
