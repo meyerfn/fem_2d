@@ -15,6 +15,19 @@ logger = logging.getLogger()
 
 @timing
 def compute_stiffnessmatrix(mesh: Mesh, basis_functions: BasisFunctions) -> np.array:
+    """Computes stiffnessmatrix for
+
+    .. math::
+        \int_\Omega \nabla_ \phi_i \nabla_ \phi_j dx
+
+    following https://team-pancho.github.io/documents/anIntro2FEM_2015.pdf (p.30)
+    Args:
+        mesh (Mesh): _description_
+        basis_functions (BasisFunctions): _description_
+
+    Returns:
+        np.array: _description_
+    """
     logger.info("Compute stiffness maxtrix")
     number_of_basis_functions = basis_functions.number_of_basis_functions()
 
