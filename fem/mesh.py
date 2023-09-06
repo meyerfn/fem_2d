@@ -77,9 +77,7 @@ class QuadraticMesh(Mesh):
             midpoint_one = (elem[0] + elem[1]) / 2.0
             midpoint_two = (elem[0] + elem[2]) / 2.0
             midpoint_three = (elem[1] + elem[2]) / 2.0
-            elem = np.vstack((elem, midpoint_one))
-            elem = np.vstack((elem, midpoint_two))
-            elem = np.vstack((elem, midpoint_three))
+            elem = np.vstack((elem, midpoint_one, midpoint_two, midpoint_three))
             for point in [midpoint_one, midpoint_two, midpoint_three]:
                 if not (point == self.nodes).all(1).any():
                     self.nodes = np.vstack((self.nodes, point))
